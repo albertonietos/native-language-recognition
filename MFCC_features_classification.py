@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 
 # %% Import data
 folder_path = "C:/native_language/data/"
@@ -50,7 +51,7 @@ print(f"train_uar = {train_uar:.2f}, dev_uar = {dev_uar:.2f}")
 """train_acc = 1.00, dev_acc = 0.30
 train_uar = 1.00, dev_uar = 0.30"""
 
-# %%
+# %% Linear SVM fine-tuning
 svm_clf = LinearSVC()
 param_grid = [{'C': [0.0001, 0.00001, 0.000001]}]
 grid_search = GridSearchCV(svm_clf, param_grid, cv=5, scoring='recall_macro', verbose=2, n_jobs=-1, refit=True)
@@ -66,7 +67,7 @@ for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
 0.3693939393939394 {'C': 0.001}
 0.32212121212121214 {'C': 0.01}"""
 
-#%%
+#%% Use best linear SVM in dev set
 svm_clf = grid_search.best_estimator_
 pred_train, pred_dev = svm_clf.predict(X_train), svm_clf.predict(X_dev)
 train_acc = svm_clf.score(X_train, y_train)
@@ -115,4 +116,21 @@ for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
 0.2887878787878788 {'C': 0.0001}
 0.373030303030303 {'C': 0.001}
 0.3657575757575758 {'C': 0.01}
+"""
+
+# %% K-Neighbors
+neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+neigh.fit(X_train, y_train)
+pred_train, pred_dev = neigh.predict(X_train), neigh.predict(X_dev)
+train_acc = neigh.score(X_train, y_train)
+dev_acc = neigh.score(X_dev, y_dev)
+train_uar = recall_score(y_train, pred_train, average='macro')
+dev_uar = recall_score(y_dev, pred_dev, average='macro')
+
+print(f"train_acc = {train_acc:.2f}, dev_acc = {dev_acc:.2f}")
+print(f"train_uar = {train_uar:.2f}, dev_uar = {dev_uar:.2f}")
+
+"""
+train_acc = 0.47, dev_acc = 0.20
+train_uar = 0.47, dev_uar = 0.21
 """
