@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
 
 # %% Import data
 folder_path = "C:/native_language/data/"
@@ -18,8 +19,8 @@ dev = pd.read_csv(os.path.join(folder_path+"devel.csv"))
 
 # %% Format data
 # Separate into features (X) and labels (y)
-X_train, y_train = train.iloc[:, 1:], train.loc[:, ["l1_nationality"]]
-X_dev, y_dev = dev.iloc[:, 1:], dev.loc[:, ["l1_nationality"]]
+X_train, y_train = train.iloc[:, 1:], train["l1_nationality"]
+X_dev, y_dev = dev.iloc[:, 1:], dev["l1_nationality"]
 
 # delete unneeded data
 del train, dev
@@ -239,8 +240,42 @@ for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
 0.24878787878787878 {'C': 0.001}
 0.24878787878787878 {'C': 0.01}"""
 
-"""WORK ONLY WITH MFCC COEFFICIENTS"""
+# %% K-Neighbors
+neigh = KNeighborsClassifier(n_neighbors=5, n_jobs=-1)
+neigh.fit(X_train, y_train)
+pred_train, pred_dev = neigh.predict(X_train), neigh.predict(X_dev)
+train_acc = neigh.score(X_train, y_train)
+dev_acc = neigh.score(X_dev, y_dev)
+train_uar = recall_score(y_train, pred_train, average='macro')
+dev_uar = recall_score(y_dev, pred_dev, average='macro')
 
+print(f"train_acc = {train_acc:.2f}, dev_acc = {dev_acc:.2f}")
+print(f"train_uar = {train_uar:.2f}, dev_uar = {dev_uar:.2f}")
+
+"""
+train_acc = 0.49, dev_acc = 0.25
+train_uar = 0.49, dev_uar = 0.26
+"""
+
+# %% Fine-tuning
+neigh = KNeighborsClassifier()
+param_grid = [{'n_neighbors': [5, 15, 30],
+               'p': [1, 2]}]
+grid_search = GridSearchCV(neigh, param_grid, scoring='recall_macro', n_jobs=-1, refit=True, cv=5, verbose=2)
+grid_search.fit(X_train, y_train)
+# see results
+cvres = grid_search.cv_results_
+for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
+    print(mean_score, params)
+
+"""
+0.10030303030303031 {'n_neighbors': 5, 'p': 1}
+0.10242424242424245 {'n_neighbors': 5, 'p': 2}
+0.12121212121212119 {'n_neighbors': 15, 'p': 1}
+0.11787878787878787 {'n_neighbors': 15, 'p': 2}
+0.11424242424242426 {'n_neighbors': 30, 'p': 1}
+0.11363636363636362 {'n_neighbors': 30, 'p': 2}
+"""
 # %%
 ada_clf = AdaBoostClassifier(n_estimators=100)
 ada_clf.fit(X_train, y_train)
