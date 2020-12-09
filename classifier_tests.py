@@ -11,6 +11,7 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, Gradien
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import GaussianNB
 
 # %% Import data
 folder_path = "C:/native_language/data/"
@@ -26,10 +27,7 @@ X_dev, y_dev = dev.iloc[:, 1:], dev["l1_nationality"]
 del train, dev
 
 # %% Build pipeline
-# feat_pipeline = Pipeline('std_scaler', StandardScaler())
-# label_pipeline = Pipeline(['label_encoder', LabelEncoder()])
 scaler = StandardScaler().fit(X_train)
-#encoder = OneHotEncoder(sparse=False).fit(y_train)
 encoder = LabelEncoder().fit(y_train)
 
 X_train, y_train = scaler.transform(X_train), encoder.transform(y_train)
@@ -308,3 +306,22 @@ print(f"train_uar = {train_uar:.2f}, dev_uar = {dev_uar:.2f}")
 """train_acc = 0.99, dev_acc = 0.37
 train_uar = 0.99, dev_uar = 0.37
 very long training time"""
+
+# %% Naive Bayes
+bayes_clf = GaussianNB()
+bayes_clf.fit(X_train, y_train)
+
+pred_train, pred_dev = bayes_clf.predict(X_train), bayes_clf.predict(X_dev)
+train_acc = bayes_clf.score(X_train, y_train)
+dev_acc = bayes_clf.score(X_dev, y_dev)
+train_uar = recall_score(y_train, pred_train, average='macro')
+dev_uar = recall_score(y_dev, pred_dev, average='macro')
+
+print(f"train_acc = {train_acc:.2f}, dev_acc = {dev_acc:.2f}")
+print(f"train_uar = {train_uar:.2f}, dev_uar = {dev_uar:.2f}")
+
+"""
+train_acc = 0.28, dev_acc = 0.23
+train_uar = 0.28, dev_uar = 0.24
+"""
+
