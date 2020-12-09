@@ -1,11 +1,12 @@
 # %% Import libraries
 import os
-import pandas as pd
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.decomposition import PCA
+
 import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.decomposition import PCA
+from sklearn.metrics import recall_score, plot_confusion_matrix
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import LinearSVC
-from sklearn.metrics import recall_score, confusion_matrix, plot_confusion_matrix
 
 # %% Import data
 folder_path = "C:/native_language/data/"
