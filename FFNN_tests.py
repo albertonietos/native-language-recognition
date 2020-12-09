@@ -66,8 +66,8 @@ def compute_uar(model, inputs, targets):
         return uar
 
 
-def train_model(X_train, y_train, X_dev, y_dev, l2_lambda=0.001, h_size=200, lr=0.0001):
-    model = MLP(h_size=h_size)
+def train_model(X_train, y_train, X_dev, y_dev, model=MLP(h_size=h_size),
+                l2_lambda=0.001, h_size=200, lr=0.0001):
     model.to(device)
 
     train_uar = []
@@ -163,7 +163,8 @@ for lr in lr_lst:
             train_uar, dev_uar = train_model(X_train, y_train, X_dev, y_dev, l2_lambda=l2, h_size=h_size)
             train_list.append(np.max(train_uar))
             dev_list.append(np.max(dev_uar))
-            print(f"lr={lr}, l2={l2}, h_size={h_size}, train_uar={np.max(train_uar):.2f}, dev_uar={np.max(dev_uar):.2f}")
+            print(
+                f"lr={lr}, l2={l2}, h_size={h_size}, train_uar={np.max(train_uar):.2f}, dev_uar={np.max(dev_uar):.2f}")
 
 """
 lr=1e-05, l2=1e-05, h_size=200, train_uar=0.98, dev_uar=0.48
@@ -179,3 +180,35 @@ lr=0.001, l2=0.0001, h_size=200, train_uar=0.98, dev_uar=0.49
 lr=0.001, l2=0.001, h_size=200, train_uar=0.99, dev_uar=0.50
 lr=0.001, l2=0.01, h_size=200, train_uar=0.79, dev_uar=0.47
 """
+
+
+# %% Add dropout to MLP
+
+class MLP(nn.Module):
+    def __init__(self, h_size=h_size, n_inputs=n_inputs, n_outputs=n_outputs):
+        super(MLP, self).__init__()
+        self.drop1 = nn.Dropout(p=.2)
+        self.fc1 = nn.Linear(n_inputs, h_size)
+        self.drop2 = nn.Dropout(p=.2)
+        self.fc2 = nn.Linear(h_size, h_size)
+        self.fc3 = nn.Linear(h_size, n_outputs)
+
+    def forward(self, x):
+        x = self.drop1(x)
+        x = F.relu(self.fc1(x))
+        x = self.drop2(x)
+        x = F.relu(self.fc2(x))
+        x = self.drop2(x)
+        return torch.sigmoid(self.fc3(x))
+
+
+# %%
+l2_lambda = 0.001
+train_uar, dev_uar = train_model(X_train, y_train, X_dev, y_dev, model=MLP(h_size=h_size),
+                                 h_size=200, l2_lambda=l2_lambda)
+
+plt.plot(train_uar, label='train')
+plt.plot(dev_uar, label='dev')
+plt.title("Evolution of MLP training")
+plt.legend()
+plt.show()
