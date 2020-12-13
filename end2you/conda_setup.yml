@@ -1,0 +1,17 @@
+name: end2you
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+dependencies:
+  - python >= 3.7
+  - pip
+  - tqdm >= 4.32.1
+  - pytorch >= 1.7.0
+  - torchvision >= 0.8.1
+  - scikit-learn >= 0.23.2
+  - tensorboard >= 2.2.1
+  - pip:
+    - facenet-pytorch >= 2.5
+    - moviepy >= 1.0.3
+    - -e .
