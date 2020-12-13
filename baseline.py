@@ -1,10 +1,9 @@
 # %% Import libraries
 import pandas as pd
 import os
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler, OneHotEncoder, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import LinearSVC
-from sklearn.metrics import recall_score
+from sklearn.metrics import recall_score, plot_confusion_matrix
 from sklearn.model_selection import GridSearchCV
 import matplotlib.pyplot as plt
 
@@ -22,10 +21,7 @@ X_dev, y_dev = dev.iloc[:, 1:], dev.loc[:, ["l1_nationality"]]
 del train, dev
 
 # %% Build pipeline
-# feat_pipeline = Pipeline('std_scaler', StandardScaler())
-# label_pipeline = Pipeline(['label_encoder', LabelEncoder()])
 scaler = StandardScaler().fit(X_train)
-#encoder = OneHotEncoder(sparse=False).fit(y_train)
 encoder = LabelEncoder().fit(y_train)
 
 X_train, y_train = scaler.transform(X_train), encoder.transform(y_train)
